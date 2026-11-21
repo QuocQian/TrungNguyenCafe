@@ -1,0 +1,253 @@
+﻿@model TrungNguyenCafe.Web.Models.Tenants.CreateTenantViewModel
+
+@{
+    ViewData["Title"] = "Thêm chi nhánh";
+}
+
+<style>
+    .tenant-create {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+        .tenant-create .page-heading {
+            margin-bottom: 28px;
+        }
+
+            .tenant-create .page-heading h2 {
+                font-size: 28px;
+                font-weight: 700;
+                color: #302016;
+                margin: 8px 0;
+            }
+
+            .tenant-create .page-heading p {
+                color: #9b8575;
+                margin: 0;
+            }
+
+    .tenant-form-card {
+        background: #fff;
+        border: 1px solid #eee4da;
+        border-radius: 18px;
+        padding: 32px;
+        box-shadow: 0 5px 20px rgba(50, 30, 15, 0.04);
+    }
+
+        .tenant-form-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #302016;
+            margin-bottom: 8px;
+        }
+
+        .tenant-form-card .form-description {
+            color: #a18b7c;
+            margin-bottom: 28px;
+            font-size: 14px;
+        }
+
+    .tenant-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+    }
+
+    .tenant-form-group {
+        margin-bottom: 20px;
+    }
+
+        .tenant-form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .tenant-form-group label {
+            display: block;
+            color: #493326;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 9px;
+        }
+
+        .tenant-form-group input,
+        .tenant-form-group textarea {
+            display: block;
+            width: 100%;
+            padding: 13px 15px;
+            border: 1px solid #e7ddd3;
+            border-radius: 9px;
+            background: #fff;
+            color: #302016;
+            font-size: 14px;
+            outline: none;
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+
+            .tenant-form-group input:focus,
+            .tenant-form-group textarea:focus {
+                border-color: #95633c;
+                box-shadow: 0 0 0 3px rgba(149, 99, 60, 0.12);
+            }
+
+        .tenant-form-group textarea {
+            resize: vertical;
+            min-height: 110px;
+        }
+
+            .tenant-form-group input::placeholder,
+            .tenant-form-group textarea::placeholder {
+                color: #b7aaa0;
+            }
+
+    .tenant-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        border-top: 1px solid #eee7df;
+        padding-top: 24px;
+        margin-top: 10px;
+    }
+
+    .tenant-btn {
+        padding: 12px 23px;
+        border-radius: 9px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        transition: 0.2s;
+    }
+
+    .tenant-btn-primary {
+        background: #95633c;
+        color: white;
+    }
+
+        .tenant-btn-primary:hover {
+            background: #754a2c;
+            color: white;
+        }
+
+    .tenant-btn-secondary {
+        background: #f4eee8;
+        color: #63452f;
+    }
+
+        .tenant-btn-secondary:hover {
+            background: #e9ded3;
+            color: #493326;
+        }
+
+    .tenant-validation {
+        color: #dc3545;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    @@media (max-width: 650px) {
+        .tenant-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .tenant-form-group.full {
+            grid-column: auto;
+        }
+
+        .tenant-form-card {
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="tenant-create">
+
+    <div class="page-heading">
+        <div style="font-size:12px; letter-spacing:2px; color:#a77951;">
+            MANAGEMENT / BRANCHES
+        </div>
+
+        <h2>Thêm chi nhánh mới</h2>
+
+        <p>Quản lý thông tin cơ sở Trung Nguyên Cafe.</p>
+    </div>
+
+    <div class="tenant-form-card">
+
+        <h3>Thông tin chi nhánh</h3>
+
+        <p class="form-description">
+            Vui lòng cung cấp đầy đủ thông tin chi nhánh mới.
+        </p>
+
+        <form asp-controller="Tenants"
+              asp-action="Create"
+              method="post">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="tenant-validation">
+            </div>
+
+            <div class="tenant-form-grid">
+
+                <div class="tenant-form-group">
+                    <label asp-for="TenantCode">
+                        Mã chi nhánh *
+                    </label>
+
+                    <input asp-for="TenantCode"
+                           placeholder="Ví dụ: CN002" />
+
+                    <span asp-validation-for="TenantCode"
+                          class="tenant-validation"></span>
+                </div>
+
+                <div class="tenant-form-group">
+                    <label asp-for="TenantName">
+                        Tên chi nhánh *
+                    </label>
+
+                    <input asp-for="TenantName"
+                           placeholder="Nhập tên chi nhánh" />
+
+                    <span asp-validation-for="TenantName"
+                          class="tenant-validation"></span>
+                </div>
+
+                <div class="tenant-form-group full">
+                    <label asp-for="Address">
+                        Địa chỉ chi nhánh *
+                    </label>
+
+                    <textarea asp-for="Address"
+                              placeholder="Nhập địa chỉ đầy đủ của chi nhánh"></textarea>
+
+                    <span asp-validation-for="Address"
+                          class="tenant-validation"></span>
+                </div>
+
+            </div>
+
+            <div class="tenant-form-actions">
+
+                <a asp-controller="Tenants"
+                   asp-action="Index"
+                   class="tenant-btn tenant-btn-secondary">
+                    Hủy
+                </a>
+
+                <button type="submit"
+                        class="tenant-btn tenant-btn-primary">
+                    + Lưu chi nhánh
+                </button>
+
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

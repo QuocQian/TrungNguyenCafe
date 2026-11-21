@@ -1,0 +1,851 @@
+﻿@model List<TrungNguyenCafe.Web.Models.Products.ProductViewModel>
+
+@using System
+@using System.Linq
+@using System.Collections.Generic
+@using TrungNguyenCafe.Web.Models.Tenants
+
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+
+    bool includeInactive = ViewBag.IncludeInactive == true;
+
+    bool isAdmin = User.IsInRole("Admin");
+
+    var tenants = ViewBag.Tenants as List<TenantViewModel>
+                  ?? new List<TenantViewModel>();
+
+    Guid? selectedTenantId =
+        ViewBag.TenantId is Guid id ? id : null;
+}
+
+<!-- =====================================
+     HEADER
+====================================== -->
+
+<div class="page-header">
+
+    <div>
+        <div class="breadcrumb">
+            MANAGEMENT / PRODUCTS
+        </div>
+
+        <h2>Quản lý sản phẩm</h2>
+
+        <p>
+            Quản lý danh mục sản phẩm, giá bán và chi nhánh sở hữu.
+        </p>
+    </div>
+
+    <a asp-action="Create" class="btn-primary">
+        + Thêm sản phẩm
+    </a>
+
+</div>
+
+<!-- =====================================
+     THÔNG BÁO
+====================================== -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert-success">
+        ✓ @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert-error">
+        @TempData["Error"]
+    </div>
+}
+
+<!-- =====================================
+     PRODUCT CONTAINER
+====================================== -->
+
+<div class="product-container">
+
+    <!-- TOOLBAR -->
+
+    <div class="product-toolbar">
+
+        <div>
+            <h3>Danh sách sản phẩm</h3>
+
+            <p>
+                Thông tin sản phẩm, chi nhánh sở hữu và trạng thái kinh doanh
+            </p>
+        </div>
+
+        <div class="toolbar-actions">
+
+            <a asp-action="Index"
+               asp-route-includeInactive="false"
+               asp-route-tenantId="@selectedTenantId"
+               class="filter-btn @(includeInactive ? "" : "active")">
+
+                Đang kinh doanh
+
+            </a>
+
+            <a asp-action="Index"
+               asp-route-includeInactive="true"
+               asp-route-tenantId="@selectedTenantId"
+               class="filter-btn @(includeInactive ? "active" : "")">
+
+                Tất cả sản phẩm
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- =====================================
+         LỌC CHI NHÁNH
+    ====================================== -->
+    @if (isAdmin)
+    {
+        <form asp-action="Index"
+              method="get"
+              class="tenant-filter">
+
+            <input type="hidden"
+                   name="includeInactive"
+                   value="@includeInactive" />
+
+            <div class="tenant-filter-group">
+
+                <label for="tenantId">
+                    Lọc theo chi nhánh
+                </label>
+
+                <select name="tenantId"
+                        id="tenantId">
+
+                    <option value=""
+                            selected="@(!selectedTenantId.HasValue)">
+
+                        Tất cả chi nhánh
+
+                    </option>
+
+                    @foreach (var tenant in tenants)
+                    {
+                        <option value="@tenant.TenantId"
+                                selected="@(selectedTenantId == tenant.TenantId)">
+
+                            @tenant.TenantCode - @tenant.TenantName
+                            (@(tenant.IsActive
+                                                ? "Đang hoạt động"
+                                                : "Ngừng hoạt động"))
+
+                </option>
+                                }
+
+                </select>
+
+            </div>
+
+            <button type="submit"
+                    class="tenant-filter-btn">
+
+                Lọc sản phẩm
+
+            </button>
+
+            <a asp-action="Index"
+               asp-route-includeInactive="@includeInactive"
+               class="tenant-reset-btn">
+
+                Xóa bộ lọc
+
+            </a>
+
+        </form>
+    }
+
+    <!-- =====================================
+         TÌM KIẾM
+    ====================================== -->
+
+    <div class="search-box">
+
+        <input type="text"
+               id="productSearch"
+               placeholder="Tìm kiếm tên sản phẩm, mã sản phẩm hoặc chi nhánh..."
+               autocomplete="off" />
+
+    </div>
+
+    <!-- =====================================
+         PRODUCT TABLE
+    ====================================== -->
+
+    <div class="table-responsive">
+
+        <table class="product-table">
+
+            <thead>
+
+                <tr>
+                    <th>STT</th>
+
+                    <th>Mã sản phẩm</th>
+
+                    <th>Tên sản phẩm</th>
+
+                    <th>Chi nhánh sở hữu</th>
+
+                    <th>Giá bán</th>
+
+                    <th>Trạng thái</th>
+
+                    <th>Thao tác</th>
+                </tr>
+
+            </thead>
+
+            <tbody id="productTable">
+
+                @if (Model != null && Model.Any())
+                {
+                    var index = 1;
+
+                    foreach (var product in Model)
+                    {
+                        var tenant = tenants.FirstOrDefault(
+                        x => x.TenantId == product.TenantId);
+
+                        <tr class="product-row">
+
+                            <!-- STT -->
+
+                            <td>
+                                @index
+                            </td>
+
+                            <!-- MÃ SẢN PHẨM -->
+
+                            <td>
+                                <strong class="product-code">
+                                    @(product.ProductId.ToString("N").Substring(0, 8).ToUpperInvariant())
+                                </strong>
+                            </td>
+
+                            <!-- TÊN SẢN PHẨM -->
+
+                            <td class="product-name">
+
+                                <strong>
+                                    @product.ProductName
+                                </strong>
+
+                            </td>
+
+                            <!-- CHI NHÁNH SỞ HỮU -->
+
+                            <td class="tenant-cell">
+
+                                <div class="tenant-info">
+
+                                    @if (tenant != null)
+                                    {
+                                        <strong>
+                                            @tenant.TenantCode - @tenant.TenantName
+                                        </strong>
+
+                                        <small title="@product.TenantId">
+                                            Tenant ID: @product.TenantId
+                                        </small>
+
+                                        @if (tenant.IsActive)
+                                        {
+                                            <span class="tenant-status-active">
+                                                Chi nhánh hoạt động
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="tenant-status-inactive">
+                                                Chi nhánh ngừng hoạt động
+                                            </span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <strong>
+                                            @(isAdmin
+                                                                            ? "Không tìm thấy chi nhánh"
+                                                                            : "Chi nhánh của bạn")
+                            </strong>
+
+                                        <small title="@product.TenantId">
+                                            Tenant ID: @product.TenantId
+                                        </small>
+                                                        }
+
+                                </div>
+
+                            </td>
+
+                            <!-- GIÁ BÁN -->
+
+                            <td class="price">
+                                @product.Price.ToString("N0") đ
+                            </td>
+
+                            <!-- TRẠNG THÁI SẢN PHẨM -->
+
+                            <td>
+
+                                @if (product.IsActive)
+                                {
+                                    <span class="status-active">
+                                        Đang kinh doanh
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-inactive">
+                                        Ngừng kinh doanh
+                                    </span>
+                                }
+
+                            </td>
+
+                            <!-- THAO TÁC -->
+
+                            <td>
+
+                                <div class="action-buttons">
+
+                                    <a asp-action="Edit"
+                                       asp-route-id="@product.ProductId"
+                                       class="btn-edit">
+
+                                        Sửa
+
+                                    </a>
+
+                                    <form asp-action="UpdateStatus"
+                                          asp-route-id="@product.ProductId"
+                                          asp-route-isActive="@(!product.IsActive)"
+                                          asp-route-includeInactive="@includeInactive"
+                                          asp-route-tenantId="@selectedTenantId"
+                                          method="post"
+                                          onsubmit="return confirm('@(product.IsActive
+                                                                                        ? "Bạn có chắc chắn muốn ngừng kinh doanh sản phẩm này?"
+                                                                                        : "Bạn muốn khôi phục sản phẩm này?")');">
+
+                                @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="@(product.IsActive
+                                                                                            ? "btn-disable"
+                                                                                            : "btn-restore")">
+
+                                    @(product.IsActive
+                                                                        ? "Ngừng kinh doanh"
+                                                                        : "Khôi phục")
+
+                                </button>
+
+                                            </form>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                                index++;
+                    }
+                }
+                else
+                {
+                    <tr>
+
+                        <td colspan="7" class="empty-data">
+
+                            Chưa có sản phẩm nào trong hệ thống.
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- KHÔNG CÓ KẾT QUẢ TÌM KIẾM -->
+
+    <div id="noSearchResult"
+         class="empty-data"
+         style="display:none;">
+
+        Không tìm thấy sản phẩm phù hợp.
+
+    </div>
+
+</div>
+
+<!-- =====================================
+     CSS
+====================================== -->
+
+<style>
+
+    /* HEADER */
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+        gap: 15px;
+    }
+
+    .breadcrumb {
+        color: #a77a4d;
+        font-size: 12px;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+    }
+
+    .page-header h2 {
+        color: #382619;
+        margin: 0 0 8px;
+    }
+
+    .page-header p {
+        color: #958577;
+        margin: 0;
+    }
+
+    .btn-primary {
+        background: #936137;
+        color: white;
+        padding: 13px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+        .btn-primary:hover {
+            background: #704522;
+            color: white;
+        }
+
+    /* CONTAINER */
+
+    .product-container {
+        background: white;
+        padding: 24px;
+        border-radius: 16px;
+        border: 1px solid #eee5dc;
+        box-shadow: 0 5px 20px rgba(50,30,15,.04);
+    }
+
+    /* TOOLBAR */
+
+    .product-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+        .product-toolbar h3 {
+            color: #382619;
+            margin: 0 0 6px;
+        }
+
+        .product-toolbar p {
+            color: #a18d7d;
+            margin: 0;
+            font-size: 13px;
+        }
+
+    .toolbar-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: #f5f0ea;
+        color: #936137;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+        .filter-btn.active {
+            background: #936137;
+            color: white;
+        }
+
+    /* TENANT FILTER */
+
+    .tenant-filter {
+        display: flex;
+        align-items: end;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 18px 0;
+        padding: 16px;
+        border: 1px solid #eee5dc;
+        border-radius: 10px;
+        background: #faf8f5;
+    }
+
+    .tenant-filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        flex: 1;
+        min-width: 220px;
+    }
+
+        .tenant-filter-group label {
+            color: #765638;
+            font-size: 12px;
+            font-weight: 650;
+        }
+
+        .tenant-filter-group select {
+            height: 42px;
+            padding: 0 12px;
+            border: 1px solid #e5dbd0;
+            border-radius: 7px;
+            background: white;
+            color: #493728;
+            outline: none;
+            width: 100%;
+        }
+
+            .tenant-filter-group select:focus {
+                border-color: #a77a4d;
+            }
+
+    .tenant-filter-btn,
+    .tenant-reset-btn {
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 16px;
+        border: none;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 650;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .tenant-filter-btn {
+        background: #936137;
+        color: white;
+    }
+
+        .tenant-filter-btn:hover {
+            background: #704522;
+        }
+
+    .tenant-reset-btn {
+        background: #eee7df;
+        color: #79583b;
+    }
+
+    /* SEARCH */
+
+    .search-box {
+        margin-bottom: 20px;
+    }
+
+        .search-box input {
+            width: 100%;
+            max-width: 500px;
+            padding: 12px 15px;
+            border: 1px solid #e4ddd5;
+            border-radius: 8px;
+            outline: none;
+        }
+
+            .search-box input:focus {
+                border-color: #a77a4d;
+            }
+
+    /* TABLE */
+
+    .table-responsive {
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    .product-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1100px;
+    }
+
+        .product-table th {
+            background: #f8f5f1;
+            color: #936137;
+            padding: 15px;
+            text-align: left;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .product-table td {
+            padding: 17px 15px;
+            border-bottom: 1px solid #eee8e1;
+            color: #493728;
+            vertical-align: middle;
+        }
+
+        .product-table tbody tr:hover {
+            background: #fcfaf7;
+        }
+
+    .product-code {
+        color: #6f5138;
+        font-size: 12px;
+        letter-spacing: .5px;
+    }
+
+    .product-name strong {
+        color: #24170f;
+    }
+
+    .price {
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    /* TENANT INFORMATION */
+
+    .tenant-cell {
+        min-width: 240px;
+    }
+
+    .tenant-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+        .tenant-info strong {
+            color: #493022;
+            font-size: 12px;
+        }
+
+        .tenant-info small {
+            color: #a08d7b;
+            font-size: 10px;
+            font-family: Consolas, monospace;
+            overflow-wrap: anywhere;
+            max-width: 240px;
+        }
+
+    .tenant-status-active,
+    .tenant-status-inactive {
+        display: inline-block;
+        margin-top: 4px;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 650;
+        white-space: nowrap;
+    }
+
+    .tenant-status-active {
+        background: #e7f5ec;
+        color: #16834a;
+    }
+
+    .tenant-status-inactive {
+        background: #fff0ed;
+        color: #cf493d;
+    }
+
+    /* PRODUCT STATUS */
+
+    .status-active,
+    .status-inactive {
+        display: inline-block;
+        padding: 7px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .status-active {
+        background: #e7f5ec;
+        color: #16834a;
+    }
+
+    .status-inactive {
+        background: #fff0ed;
+        color: #cf493d;
+    }
+
+    /* ACTION BUTTONS */
+
+    .action-buttons {
+        display: flex;
+        gap: 7px;
+        align-items: center;
+    }
+
+        .action-buttons a,
+        .action-buttons button {
+            padding: 9px 12px;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+    .btn-edit {
+        background: #f3ece4;
+        color: #936137;
+    }
+
+    .btn-disable {
+        background: #fff0ed;
+        color: #d34a40;
+    }
+
+    .btn-restore {
+        background: #e7f5ec;
+        color: #16834a;
+    }
+
+    /* EMPTY DATA */
+
+    .empty-data {
+        text-align: center;
+        padding: 30px;
+        color: #958577;
+    }
+
+    /* ALERT */
+
+    .alert-success,
+    .alert-error {
+        padding: 14px 18px;
+        border-radius: 9px;
+        margin-bottom: 20px;
+    }
+
+    .alert-success {
+        background: #e7f5ec;
+        color: #16834a;
+    }
+
+    .alert-error {
+        background: #fff0ed;
+        color: #cf493d;
+    }
+
+    /* RESPONSIVE */
+
+
+    /* RESPONSIVE */
+
+    @@media (max-width: 768px) {
+
+        .page-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .product-container {
+            padding: 15px;
+        }
+
+        .tenant-filter {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .tenant-filter-group {
+            min-width: 100%;
+        }
+
+        .tenant-filter-btn,
+        .tenant-reset-btn {
+            width: 100%;
+        }
+    }
+
+</style>
+
+<!-- =====================================
+     JAVASCRIPT TÌM KIẾM
+====================================== -->
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const searchInput =
+            document.getElementById("productSearch");
+
+        if (!searchInput) return;
+
+        searchInput.addEventListener("input", function () {
+
+            const keyword =
+                this.value.toLowerCase().trim();
+
+            const rows =
+                document.querySelectorAll(".product-row");
+
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+
+                // Tìm trên toàn bộ nội dung hàng:
+                // Mã sản phẩm, tên sản phẩm,
+                // Tenant ID, mã và tên chi nhánh
+
+                const text = row.textContent.toLowerCase();
+
+                const matched = text.includes(keyword);
+
+                row.style.display = matched ? "" : "none";
+
+                if (matched) {
+                    visibleCount++;
+                }
+
+            });
+
+            const noResult =
+                document.getElementById("noSearchResult");
+
+            noResult.style.display =
+                visibleCount === 0 && rows.length > 0
+                    ? "block"
+                    : "none";
+
+        });
+
+    });
+
+</script>

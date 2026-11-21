@@ -1,0 +1,366 @@
+﻿@model TrungNguyenCafe.Web.Models.Orders.OrderHistoryViewModel
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Lịch sử đơn hàng";
+
+    var paidOrders = Model.Orders.Count(x => x.Status == "Paid");
+    var pendingOrders = Model.Orders.Count - paidOrders;
+    var totalAmount = Model.Orders.Sum(x => x.Total);
+}
+
+<div class="orders-page">
+
+    <!-- HEADER -->
+    <div class="orders-heading">
+        <div>
+            <div class="orders-kicker">QUẢN LÝ BÁN HÀNG</div>
+            <h1>Lịch sử đơn hàng</h1>
+            <p>Theo dõi và quản lý toàn bộ đơn hàng của hệ thống</p>
+        </div>
+
+        <a asp-controller="Orders"
+           asp-action="Index"
+           class="orders-primary-btn">
+            <span>＋</span> Tạo đơn hàng mới
+        </a>
+    </div>
+
+    <!-- THÔNG BÁO -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="orders-alert error">
+            ⚠ @TempData["Error"]
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="orders-alert success">
+            ✓ @TempData["Success"]
+        </div>
+    }
+
+    <!-- THỐNG KÊ -->
+    <div class="orders-stats">
+
+        <div class="orders-stat-card">
+            <div class="orders-stat-top">
+                <span>Tổng đơn hàng</span>
+                <div class="orders-stat-icon brown">▤</div>
+            </div>
+            <div class="orders-stat-number">
+                @Model.Orders.Count
+            </div>
+            <div class="orders-stat-note">
+                Tổng số đơn đã tạo
+            </div>
+        </div>
+
+        <div class="orders-stat-card">
+            <div class="orders-stat-top">
+                <span>Đã thanh toán</span>
+                <div class="orders-stat-icon green">✓</div>
+            </div>
+            <div class="orders-stat-number">
+                @paidOrders
+            </div>
+            <div class="orders-stat-note">
+                Đơn hàng hoàn tất thanh toán
+            </div>
+        </div>
+
+        <div class="orders-stat-card">
+            <div class="orders-stat-top">
+                <span>Chờ thanh toán</span>
+                <div class="orders-stat-icon orange">◷</div>
+            </div>
+            <div class="orders-stat-number">
+                @pendingOrders
+            </div>
+            <div class="orders-stat-note">
+                Đơn hàng chưa thanh toán
+            </div>
+        </div>
+
+        <div class="orders-stat-card">
+            <div class="orders-stat-top">
+                <span>Tổng giá trị đơn</span>
+                <div class="orders-stat-icon gold">₫</div>
+            </div>
+            <div class="orders-stat-number money">
+                @totalAmount.ToString("N0") đ
+            </div>
+            <div class="orders-stat-note">
+                Giá trị tất cả đơn hàng
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BẢNG ĐƠN HÀNG -->
+    <div class="orders-panel">
+
+        <div class="orders-panel-header">
+            <div>
+                <h2>Danh sách đơn hàng</h2>
+                <p>Thông tin chi tiết các giao dịch</p>
+            </div>
+
+            <span class="orders-total-label">
+                @Model.Orders.Count đơn hàng
+            </span>
+        </div>
+
+        <!-- BỘ LỌC -->
+        <div class="orders-toolbar">
+
+            <div class="orders-search">
+                <span>⌕</span>
+                <input type="search"
+                       id="orderSearch"
+                       placeholder="Tìm theo mã đơn hàng..." />
+            </div>
+
+            <select id="orderStatusFilter" class="orders-select">
+                <option value="">Tất cả trạng thái</option>
+                <option value="paid">Đã thanh toán</option>
+                <option value="pending">Chờ thanh toán</option>
+            </select>
+
+            @if (Model.CanFilterTenant)
+            {
+                <form method="get"
+                      asp-action="History"
+                      class="orders-branch-filter">
+
+                    <select name="tenantId" class="orders-select">
+                        <option value="">Tất cả chi nhánh</option>
+
+                        @foreach (var tenant in Model.Tenants)
+                        {
+                            <option value="@tenant.TenantId"
+                                    selected="@(Model.TenantId == tenant.TenantId)">
+                                @tenant.TenantName
+                            </option>
+                        }
+                    </select>
+
+                    <button type="submit" class="orders-filter-btn">
+                        Lọc
+                    </button>
+                </form>
+            }
+
+        </div>
+
+        <!-- TABLE -->
+        <div class="orders-table-wrap">
+
+            <table class="orders-table">
+
+                <thead>
+                    <tr>
+                        <th>MÃ ĐƠN HÀNG</th>
+                        <th>NGÀY TẠO</th>
+                        <th>THANH TOÁN</th>
+                        <th>TỔNG TIỀN</th>
+                        <th>TRẠNG THÁI</th>
+                        <th class="text-right">THAO TÁC</th>
+                    </tr>
+                </thead>
+
+                <tbody id="ordersTableBody">
+
+                    @if (Model.Orders.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6">
+                                <div class="orders-empty">
+                                    <div class="orders-empty-icon">☕</div>
+                                    <h3>Chưa có đơn hàng</h3>
+                                    <p>Các đơn hàng được tạo sẽ xuất hiện tại đây.</p>
+                                    <a asp-action="Index" class="orders-empty-link">
+                                        Tạo đơn hàng đầu tiên →
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var order in Model.Orders)
+                        {
+                            var isPaid = order.Status == "Paid";
+
+                            <tr class="order-row"
+                                data-search="@order.OrderId.ToString()"
+                                data-status="@(isPaid ? "paid" : "pending")">
+
+                                <td>
+                                    <div class="order-code">
+                                        #@order.OrderId.ToString("N").Substring(0, 8).ToUpperInvariant()
+                                    </div>
+                                    <div class="order-subcode">
+                                        Mã giao dịch
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="order-date">
+                                        @order.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")
+                                    </div>
+                                    <div class="order-time">
+                                        @order.CreatedAt.ToLocalTime().ToString("HH:mm")
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="payment-method">
+                                        @(string.IsNullOrWhiteSpace(order.PaymentMethod)
+                                                                        ? "Chưa xác định"
+                                                                        : order.PaymentMethod)
+                            </span>
+                        </td>
+
+                                <td>
+                                    <div class="order-price">
+                                        @order.Total.ToString("N0") đ
+                                    </div>
+                                </td>
+
+                                <td>
+                            @if (isPaid)
+                                    {
+                                        <span class="order-status paid">
+                                            <span></span> Đã thanh toán
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="order-status pending">
+                                            <span></span> Chờ thanh toán
+                                        </span>
+                                    }
+                                </td>
+
+
+                                <td class="text-right">
+
+                                    <div class="orders-row-actions">
+
+                                        @if (order.Status == "Pending" &&
+                                                                        (User.IsInRole("Admin") ||
+                                                                        User.IsInRole("FranchiseOwner") ||
+                                                                        User.IsInRole("StoreManager") ||
+                                                                        User.IsInRole("SalesStaff")))
+                                        {
+                                            <form asp-action="PayCash"
+                                                  method="post"
+                                                  onsubmit="return confirm('Xác nhận đã nhận đủ tiền từ khách hàng?');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="id"
+                                                       value="@order.OrderId" />
+
+                                                <input type="hidden"
+                                                       name="returnToHistory"
+                                                       value="true" />
+
+                                                @if (Model.TenantId.HasValue)
+                                                {
+                                                    <input type="hidden"
+                                                           name="tenantId"
+                                                           value="@Model.TenantId" />
+                                                }
+
+                                                <button type="submit"
+                                                        class="orders-pay-btn">
+                                                    ✓ Xác nhận thanh toán
+                                                </button>
+
+                                            </form>
+                                        }
+
+                                        <a asp-action="Details"
+                                           asp-route-id="@order.OrderId"
+                                           class="orders-detail-btn">
+                                            Chi tiết →
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+
+                            </tr>
+                        }
+                    }
+
+                    @if (Model.Orders.Count > 0)
+                    {
+                        <tr id="ordersNoResults" hidden>
+                            <td colspan="6">
+                                <div class="orders-no-result-text">
+                                    Không tìm thấy đơn hàng phù hợp.
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="orders-panel-footer">
+            <span>Dữ liệu đơn hàng được đồng bộ từ hệ thống.</span>
+            <span>TRUNG NGUYEN CAFE</span>
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const searchInput = document.getElementById("orderSearch");
+            const statusFilter = document.getElementById("orderStatusFilter");
+            const rows = document.querySelectorAll(".order-row");
+            const noResults = document.getElementById("ordersNoResults");
+
+            function filterOrders() {
+                const keyword = searchInput.value.trim().toLowerCase();
+                const status = statusFilter.value;
+
+                let visibleCount = 0;
+
+                rows.forEach(function (row) {
+                    const orderCode = row.dataset.search.toLowerCase();
+                    const orderStatus = row.dataset.status;
+
+                    const matchSearch = orderCode.includes(keyword);
+                    const matchStatus = !status || orderStatus === status;
+
+                    const visible = matchSearch && matchStatus;
+
+                    row.hidden = !visible;
+
+                    if (visible) visibleCount++;
+                });
+
+                if (noResults) {
+                    noResults.hidden = visibleCount !== 0;
+                }
+            }
+
+            searchInput.addEventListener("input", filterOrders);
+            statusFilter.addEventListener("change", filterOrders);
+        });
+    </script>
+}

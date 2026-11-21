@@ -1,0 +1,377 @@
+﻿@model TrungNguyenCafe.Web.Models.Products.CreateProductViewModel
+
+@using TrungNguyenCafe.Web.Models.Tenants
+
+@{
+    ViewData["Title"] = "Thêm sản phẩm";
+
+    bool isAdmin = User.IsInRole("Admin");
+
+    var tenants = ViewBag.Tenants as List<TenantViewModel>
+                  ?? new List<TenantViewModel>();
+}
+
+<div class="page-header">
+    <div>
+        <div class="breadcrumb">MANAGEMENT / PRODUCTS / CREATE</div>
+        <h2>Thêm sản phẩm mới</h2>
+        <p>Nhập thông tin sản phẩm vào hệ thống quản lý Trung Nguyên Cafe.</p>
+    </div>
+
+    <a asp-action="Index" class="btn-back">
+        ← Quay lại
+    </a>
+</div>
+
+<div class="form-container">
+
+    <div class="form-heading">
+        <div class="form-icon">☕</div>
+        <div>
+            <h3>Thông tin sản phẩm</h3>
+            <p>Vui lòng điền đầy đủ thông tin bên dưới.</p>
+        </div>
+    </div>
+
+    <hr />
+
+    <form asp-action="Create" method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly"
+             class="validation-summary"></div>
+
+        <!-- TÊN SẢN PHẨM -->
+        <div class="form-group">
+
+            <label asp-for="ProductName">
+                Tên sản phẩm <span>*</span>
+            </label>
+
+            <input asp-for="ProductName"
+                   class="form-control"
+                   placeholder="Ví dụ: Cà phê sữa đá Trung Nguyên"
+                   maxlength="200" />
+
+            <span asp-validation-for="ProductName"
+                  class="field-error"></span>
+
+        </div>
+
+        <!-- GIÁ BÁN -->
+        <div class="form-group">
+
+            <label asp-for="Price">
+                Giá bán (VNĐ) <span>*</span>
+            </label>
+
+            <div class="price-input">
+                <input asp-for="Price"
+                       class="form-control"
+                       type="number"
+                       min="0.01"
+                       step="0.01"
+                       placeholder="Nhập giá bán" />
+
+                <span>VNĐ</span>
+            </div>
+
+            <span asp-validation-for="Price"
+                  class="field-error"></span>
+
+            <small>Giá bán phải lớn hơn 0.</small>
+
+        </div>
+
+        <!-- CHI NHÁNH -->
+        <div class="form-group">
+
+            <label>
+                Chi nhánh áp dụng <span>*</span>
+            </label>
+
+            @if (isAdmin)
+            {
+                <select asp-for="TenantId" class="form-control">
+                    <option value="">-- Chọn chi nhánh --</option>
+
+                    @foreach (var tenant in tenants)
+                    {
+                        <option value="@tenant.TenantId">
+                            @tenant.TenantCode - @tenant.TenantName
+                        </option>
+                    }
+                </select>
+
+                <span asp-validation-for="TenantId"
+                      class="field-error"></span>
+            }
+            else
+            {
+                <input type="hidden" asp-for="TenantId" />
+
+                <div class="branch-locked">
+                    <span>🏢</span>
+                    <div>
+                        <strong>Chi nhánh được phân công</strong>
+                        <p>Hệ thống tự động gán theo tài khoản đăng nhập.</p>
+                    </div>
+                    <span class="locked-label">Đã khóa</span>
+                </div>
+            }
+
+        </div>
+
+        <div class="form-note">
+            <strong>Lưu ý:</strong>
+            Sản phẩm sau khi tạo sẽ có trạng thái mặc định là
+            <strong>Đang kinh doanh</strong>.
+        </div>
+
+        <div class="form-actions">
+
+            <a asp-action="Index" class="btn-cancel">
+                Hủy
+            </a>
+
+            <button type="submit" class="btn-submit">
+                + Lưu sản phẩm
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+    }
+
+    .breadcrumb {
+        color: #a77a4d;
+        font-size: 12px;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+    }
+
+    .page-header h2 {
+        color: #382619;
+        margin: 0 0 8px;
+    }
+
+    .page-header p {
+        color: #958577;
+        margin: 0;
+    }
+
+    .btn-back {
+        background: #f1e9df;
+        color: #80552f;
+        padding: 12px 18px;
+        border-radius: 8px;
+        text-decoration: none;
+    }
+
+    .form-container {
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        border: 1px solid #eee5dc;
+        box-shadow: 0 5px 20px rgba(50,30,15,.04);
+        max-width: 850px;
+    }
+
+    .form-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .form-icon {
+        width: 52px;
+        height: 52px;
+        background: #f5eee5;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+    }
+
+    .form-heading h3 {
+        margin: 0 0 5px;
+        color: #382619;
+    }
+
+    .form-heading p {
+        margin: 0;
+        color: #a18d7d;
+        font-size: 13px;
+    }
+
+    .form-container hr {
+        border: 0;
+        border-top: 1px solid #eee8e1;
+        margin: 25px 0;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #594330;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+            .form-group label span {
+                color: #d34a40;
+            }
+
+    .form-control {
+        width: 100%;
+        padding: 13px 15px;
+        border: 1px solid #e4ddd5;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        background: white;
+    }
+
+        .form-control:focus {
+            border-color: #bd8a50;
+            box-shadow: 0 0 0 3px rgba(189,138,80,.12);
+        }
+
+    .price-input {
+        position: relative;
+    }
+
+        .price-input input {
+            padding-right: 65px;
+        }
+
+        .price-input span {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #958577;
+            font-size: 13px;
+        }
+
+    .form-group small {
+        display: block;
+        margin-top: 7px;
+        color: #a18d7d;
+    }
+
+    .field-error {
+        display: block;
+        color: #c0392b;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .validation-summary {
+        color: #c0392b;
+        margin-bottom: 15px;
+    }
+
+    .branch-locked {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #f8f5f1;
+        padding: 15px;
+        border-radius: 9px;
+    }
+
+        .branch-locked > span:first-child {
+            font-size: 22px;
+        }
+
+        .branch-locked strong {
+            color: #493728;
+        }
+
+        .branch-locked p {
+            margin: 5px 0 0;
+            font-size: 12px;
+            color: #958577;
+        }
+
+    .locked-label {
+        margin-left: auto;
+        color: #16834a;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .form-note {
+        background: #f8f5f1;
+        padding: 15px;
+        border-radius: 8px;
+        color: #806044;
+        font-size: 13px;
+        margin-bottom: 25px;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        border-top: 1px solid #eee8e1;
+        padding-top: 22px;
+    }
+
+    .btn-cancel,
+    .btn-submit {
+        padding: 12px 22px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+    }
+
+    .btn-cancel {
+        background: #f1e9df;
+        color: #80552f;
+    }
+
+    .btn-submit {
+        background: #936137;
+        color: white;
+    }
+
+        .btn-submit:hover {
+            background: #704522;
+        }
+
+    @@media(max-width: 600px) {
+        .page-header {
+            align-items: flex-start;
+            gap: 15px;
+            flex-direction: column;
+        }
+
+        .form-container {
+            padding: 20px;
+        }
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

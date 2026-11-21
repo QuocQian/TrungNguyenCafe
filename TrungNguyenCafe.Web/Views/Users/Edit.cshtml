@@ -1,0 +1,308 @@
+﻿@model TrungNguyenCafe.Web.Models.Users.UpdateUserViewModel
+
+@{
+    ViewData["Title"] = "Chỉnh sửa tài khoản";
+}
+
+<style>
+    .user-edit-page {
+        padding: 10px 0;
+    }
+
+    .user-edit-header {
+        margin-bottom: 25px;
+    }
+
+        .user-edit-header h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #38251a;
+            margin: 8px 0;
+        }
+
+        .user-edit-header p {
+            color: #a28b79;
+            margin: 0;
+        }
+
+    .user-edit-card {
+        background: white;
+        border: 1px solid #eee3d9;
+        border-radius: 18px;
+        padding: 32px 40px;
+        box-shadow: 0 5px 20px rgba(60,35,20,.04);
+    }
+
+        .user-edit-card h4 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #38251a;
+            margin-bottom: 8px;
+        }
+
+    .user-edit-subtitle {
+        color: #a28b79;
+        margin-bottom: 30px;
+    }
+
+    .edit-label {
+        font-weight: 600;
+        color: #38251a;
+        margin-bottom: 10px;
+    }
+
+    .edit-input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid #e8dcd0;
+        border-radius: 11px;
+        font-size: 15px;
+        color: #38251a;
+        background: white;
+    }
+
+        .edit-input:focus {
+            outline: none;
+            border-color: #a5754b;
+            box-shadow: 0 0 0 3px rgba(165,117,75,.12);
+        }
+
+    .edit-group {
+        margin-bottom: 25px;
+    }
+
+    .edit-notice {
+        background: #faf6f1;
+        color: #8c684b;
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 13px;
+        line-height: 1.7;
+        margin-top: 12px;
+    }
+
+    .edit-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        border-top: 1px solid #eee8e2;
+        padding-top: 25px;
+        margin-top: 15px;
+    }
+
+    .btn-edit-cancel {
+        background: #f5eee8;
+        color: #805a3a;
+        padding: 12px 24px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .btn-edit-save {
+        background: #95643c;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-edit-save:hover {
+            background: #754a2b;
+        }
+
+    .edit-error {
+        color: #dc5147;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    @@media(max-width:768px) {
+        .user-edit-card {
+            padding: 22px 18px;
+        }
+    }
+</style>
+
+<div class="user-edit-page">
+
+    <div class="user-edit-header">
+
+        <div style="color:#b17b4b;font-size:13px;letter-spacing:2px;">
+            MANAGEMENT / USERS
+        </div>
+
+        <h2>Chỉnh sửa tài khoản</h2>
+
+        <p>Cập nhật vai trò và chi nhánh được phân công cho người dùng.</p>
+
+    </div>
+
+    <div class="user-edit-card">
+
+        <h4>Thông tin phân quyền</h4>
+
+        <p class="user-edit-subtitle">
+            Thay đổi thông tin phân quyền của tài khoản.
+        </p>
+
+        <form asp-controller="Users"
+              asp-action="Edit"
+              asp-route-id="@ViewContext.RouteData.Values["id"]"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+            <!-- VAI TRÒ -->
+            <div class="edit-group">
+
+                <label asp-for="RoleName" class="edit-label">
+                    Vai trò tài khoản *
+                </label>
+
+                <select asp-for="RoleName"
+                        id="RoleName"
+                        class="edit-input">
+
+                    <option value="">-- Chọn vai trò --</option>
+
+                    <option value="Admin">Admin hệ thống</option>
+
+                    <option value="FranchiseOwner">Chủ cửa hàng</option>
+
+                    <option value="SalesStaff">Nhân viên</option>
+
+                </select>
+
+                <span asp-validation-for="RoleName"
+                      class="edit-error">
+                </span>
+
+                <div class="edit-notice" id="roleDescription">
+                    Chọn vai trò phù hợp với nhiệm vụ của người dùng.
+                </div>
+
+            </div>
+
+            <!-- CHI NHÁNH -->
+            <div class="edit-group" id="tenantGroup">
+
+                <label asp-for="TenantId" class="edit-label">
+                    Chi nhánh được phân công *
+                </label>
+
+                <select asp-for="TenantId"
+                        id="TenantId"
+                        class="edit-input">
+
+                    <option value="">-- Chọn chi nhánh --</option>
+
+                    @if (ViewBag.Tenants != null)
+                    {
+                        foreach (var tenant in ViewBag.Tenants)
+                        {
+                            <option value="@tenant.TenantId">
+                                @tenant.TenantCode - @tenant.TenantName
+                            </option>
+                        }
+                    }
+
+                </select>
+
+                <span asp-validation-for="TenantId"
+                      class="edit-error">
+                </span>
+
+                <div class="edit-notice">
+                    Chủ cửa hàng và Nhân viên phải được gán vào một chi nhánh.
+                    Người dùng chỉ được truy cập dữ liệu thuộc phạm vi được phân quyền.
+                </div>
+
+            </div>
+
+            <!-- NÚT -->
+            <div class="edit-footer">
+
+                <a asp-action="Index" class="btn-edit-cancel">
+                    Hủy
+                </a>
+
+                <button type="submit" class="btn-edit-save">
+                    Lưu thay đổi
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        const roleSelect = document.getElementById("RoleName");
+        const tenantSelect = document.getElementById("TenantId");
+        const tenantGroup = document.getElementById("tenantGroup");
+        const roleDescription = document.getElementById("roleDescription");
+
+        function updateRoleForm() {
+
+            const role = roleSelect.value;
+
+            if (role === "Admin") {
+
+                tenantGroup.style.display = "none";
+                tenantSelect.value = "";
+                tenantSelect.required = false;
+
+                roleDescription.innerHTML =
+                    "<strong>Admin hệ thống:</strong> Có toàn quyền quản lý hệ thống.";
+
+            }
+            else if (role === "FranchiseOwner") {
+
+                tenantGroup.style.display = "block";
+                tenantSelect.required = true;
+
+                roleDescription.innerHTML =
+                    "<strong>Chủ cửa hàng:</strong> Quản lý nhân viên, sản phẩm, đơn hàng và báo cáo trong chi nhánh.";
+
+            }
+            else if (role === "SalesStaff") {
+
+                tenantGroup.style.display = "block";
+                tenantSelect.required = true;
+
+                roleDescription.innerHTML =
+                    "<strong>Nhân viên:</strong> Được tạo đơn hàng và xem báo cáo doanh thu theo quyền được cấp.";
+
+            }
+            else {
+
+                tenantGroup.style.display = "block";
+                tenantSelect.required = false;
+
+                roleDescription.innerHTML =
+                    "Chọn vai trò phù hợp với nhiệm vụ của người dùng.";
+
+            }
+
+        }
+
+        roleSelect.addEventListener("change", updateRoleForm);
+
+        updateRoleForm();
+
+    </script>
+}

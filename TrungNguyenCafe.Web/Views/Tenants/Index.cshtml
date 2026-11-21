@@ -1,0 +1,352 @@
+﻿@model IEnumerable<TrungNguyenCafe.Web.Models.Tenants.TenantViewModel>
+
+@{
+    ViewData["Title"] = "Quản lý chi nhánh";
+
+    bool includeInactive =
+        ViewBag.IncludeInactive is bool value && value;
+}
+
+<style>
+    .tenant-page {
+        color: #352419;
+    }
+
+    .tenant-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
+
+        .tenant-header h2 {
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        .tenant-header p {
+            color: #9b8777;
+            margin: 0;
+        }
+
+    .tenant-card {
+        background: #fff;
+        border: 1px solid #eee5dc;
+        border-radius: 15px;
+        padding: 22px;
+        box-shadow: 0 4px 15px rgba(50,30,15,.035);
+    }
+
+    .tenant-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .tenant-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .tenant-table th {
+            background: #faf7f3;
+            color: #92745e;
+            font-size: 13px;
+            padding: 15px 12px;
+            text-align: left;
+        }
+
+        .tenant-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #f0ebe5;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+
+        .tenant-table tr:hover td {
+            background: #fdfbf8;
+        }
+
+    .tenant-code {
+        font-weight: 700;
+        color: #986532;
+    }
+
+    .tenant-status {
+        display: inline-block;
+        padding: 6px 11px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: #e8f5ec;
+        color: #25844b;
+    }
+
+    .status-inactive {
+        background: #fcebea;
+        color: #b94a48;
+    }
+
+    .tenant-btn {
+        border: 0;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 13px;
+        text-decoration: none;
+        cursor: pointer;
+        display: inline-block;
+    }
+
+    .btn-add {
+        background: #8e5d32;
+        color: white;
+        padding: 11px 17px;
+    }
+
+        .btn-add:hover {
+            background: #714523;
+            color: white;
+        }
+
+    .btn-edit {
+        background: #f4ede5;
+        color: #80552e;
+    }
+
+    .btn-delete {
+        background: #fff0ef;
+        color: #bd4c45;
+    }
+
+    .btn-restore {
+        background: #e8f5ec;
+        color: #25844b;
+    }
+
+    .tenant-alert {
+        padding: 13px 16px;
+        border-radius: 9px;
+        margin-bottom: 18px;
+    }
+
+    .tenant-empty {
+        text-align: center;
+        padding: 55px 15px;
+        color: #9b8777;
+    }
+
+    .tenant-actions {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+    }
+
+    .tenant-filter {
+        color: #81552e;
+        text-decoration: none;
+        padding: 9px 13px;
+        border-radius: 8px;
+        background: #f6f0e9;
+        font-size: 13px;
+    }
+
+        .tenant-filter.selected {
+            background: #80552e;
+            color: white;
+        }
+</style>
+
+<div class="tenant-page">
+
+    <div class="tenant-header">
+        <div>
+            <div style="color:#b27b48;font-size:12px;
+                        letter-spacing:1.5px;margin-bottom:8px;">
+                MANAGEMENT / BRANCHES
+            </div>
+
+            <h2>Quản lý chi nhánh</h2>
+
+            <p>Quản lý thông tin và trạng thái các chi nhánh Trung Nguyên Cafe.</p>
+        </div>
+
+        <a asp-action="Create" class="tenant-btn btn-add">
+            + Thêm chi nhánh
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="tenant-alert"
+             style="background:#e8f5ec;color:#25844b;">
+            ✓ @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="tenant-alert"
+             style="background:#fff0ef;color:#bd4c45;">
+            @TempData["Error"]
+        </div>
+    }
+
+    <div class="tenant-card">
+
+        <div class="tenant-toolbar">
+
+            <div>
+                <strong>Danh sách chi nhánh</strong>
+                <div style="font-size:13px;color:#9b8777;margin-top:5px;">
+                    Thông tin các cơ sở trong hệ thống
+                </div>
+            </div>
+
+            <div style="display:flex;gap:8px;">
+                <a asp-action="Index"
+                   asp-route-includeInactive="false"
+                   class="tenant-filter @(includeInactive ? "" : "selected")">
+                    Đang hoạt động
+                </a>
+
+                <a asp-action="Index"
+                   asp-route-includeInactive="true"
+                   class="tenant-filter @(includeInactive ? "selected" : "")">
+                    Tất cả chi nhánh
+                </a>
+            </div>
+
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div style="overflow-x:auto;">
+
+                <table class="tenant-table">
+
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã chi nhánh</th>
+                            <th>Tên chi nhánh</th>
+                            <th>Địa chỉ</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @{
+                            int index = 1;
+                        }
+
+                        @foreach (var tenant in Model)
+                        {
+                            <tr>
+                                <td>@index</td>
+
+                                <td class="tenant-code">
+                                    @tenant.TenantCode
+                                </td>
+
+                                <td>
+                                    <strong>@tenant.TenantName</strong>
+                                </td>
+
+                                <td>@tenant.Address</td>
+
+                                <td>
+                                    @if (tenant.IsActive)
+                                    {
+                                        <span class="tenant-status status-active">
+                                            Đang hoạt động
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="tenant-status status-inactive">
+                                            Ngừng hoạt động
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <div class="tenant-actions">
+
+                                        <a asp-action="Edit"
+                                           asp-route-id="@tenant.TenantId"
+                                           class="tenant-btn btn-edit">
+                                            Sửa
+                                        </a>
+
+                                        @if (tenant.IsActive)
+                                        {
+                                            <form asp-action="Delete"
+                                                  asp-route-id="@tenant.TenantId"
+                                                  method="post"
+                                                  onsubmit="return confirm('Bạn có chắc chắn muốn ngừng hoạt động chi nhánh này?');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit"
+                                                        class="tenant-btn btn-delete">
+                                                    Ngừng hoạt động
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="Restore"
+                                                  asp-route-id="@tenant.TenantId"
+                                                  method="post"
+                                                  onsubmit="return confirm('Bạn muốn khôi phục chi nhánh này?');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit"
+                                                        class="tenant-btn btn-restore">
+                                                    Khôi phục
+                                                </button>
+                                            </form>
+                                        }
+
+                                    </div>
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+        else
+        {
+            <div class="tenant-empty">
+                <div style="font-size:45px;margin-bottom:15px;">☕</div>
+
+                <h4>Chưa có dữ liệu chi nhánh</h4>
+
+                <p>Hãy thêm chi nhánh mới để bắt đầu quản lý.</p>
+
+                <a asp-action="Create" class="tenant-btn btn-add">
+                    + Thêm chi nhánh
+                </a>
+            </div>
+        }
+
+    </div>
+
+</div>

@@ -1,0 +1,413 @@
+﻿@model TrungNguyenCafe.Web.Models.Orders.OrderViewModel
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+
+    var isPaid = Model.Status == "Paid";
+    var isPending = Model.Status == "Pending";
+    var orderCode = Model.OrderId.ToString("N")
+        .Substring(0, 8).ToUpperInvariant();
+
+    var totalQuantity = Model.Items.Sum(x => x.Quantity);
+
+    var paymentMethod = string.IsNullOrWhiteSpace(Model.PaymentMethod)
+        ? "Chưa thanh toán"
+        : Model.PaymentMethod;
+}
+
+<div class="order-detail-page">
+
+    <!-- HEADER -->
+    <div class="detail-heading">
+
+        <div>
+            <div class="detail-breadcrumb">
+                QUẢN LÝ BÁN HÀNG <span>/</span> CHI TIẾT ĐƠN HÀNG
+            </div>
+
+            <h1>Chi tiết đơn hàng</h1>
+
+            <p>
+                Xem thông tin giao dịch và các sản phẩm trong đơn hàng
+            </p>
+        </div>
+
+        <div class="detail-heading-actions">
+
+            <a asp-action="History" class="detail-back-btn">
+                <span>←</span> Quay lại
+            </a>
+
+            <button type="button"
+                    class="detail-print-btn"
+                    onclick="window.print()">
+                <span>▤</span> In đơn hàng
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- ALERT -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="detail-alert detail-alert-success">
+            <span>✓</span>
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="detail-alert detail-alert-error">
+            <span>!</span>
+            @TempData["Error"]
+        </div>
+    }
+
+    <!-- ORDER HERO -->
+    <div class="detail-hero">
+
+        <div class="detail-hero-left">
+
+            <div class="detail-hero-label">
+                THÔNG TIN GIAO DỊCH
+            </div>
+
+            <div class="detail-hero-code">
+                #@orderCode
+            </div>
+
+            <div class="detail-hero-id">
+                Mã đơn hàng: @Model.OrderId
+            </div>
+
+        </div>
+
+        <div class="detail-hero-right">
+
+            <div class="detail-hero-status-label">
+                TRẠNG THÁI ĐƠN HÀNG
+            </div>
+
+            @if (isPaid)
+            {
+                <span class="detail-status detail-status-paid">
+                    <span></span> Đã thanh toán
+                </span>
+            }
+            else if (isPending)
+            {
+                <span class="detail-status detail-status-pending">
+                    <span></span> Chờ thanh toán
+                </span>
+            }
+            else
+            {
+                <span class="detail-status detail-status-other">
+                    <span></span> @Model.Status
+                </span>
+            }
+
+        </div>
+
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="detail-layout">
+
+        <div class="detail-main-column">
+
+            <!-- ORDER INFORMATION -->
+            <section class="detail-card">
+
+                <div class="detail-card-heading">
+
+                    <div class="detail-heading-icon">▤</div>
+
+                    <div>
+                        <h2>Thông tin đơn hàng</h2>
+                        <p>Thông tin cơ bản của giao dịch</p>
+                    </div>
+
+                </div>
+
+                <div class="detail-info-grid">
+
+                    <div class="detail-info-item">
+
+                        <div class="detail-info-label">
+                            Ngày tạo đơn hàng
+                        </div>
+
+                        <div class="detail-info-value">
+                            @Model.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")
+                        </div>
+
+                        <div class="detail-info-sub">
+                            @Model.CreatedAt.ToLocalTime().ToString("HH:mm")
+                        </div>
+
+                    </div>
+
+                    <div class="detail-info-item">
+
+                        <div class="detail-info-label">
+                            Mã chi nhánh
+                        </div>
+
+                        <div class="detail-info-guid" title="@Model.TenantId">
+                            @Model.TenantId
+                        </div>
+
+                    </div>
+
+                    <div class="detail-info-item">
+
+                        <div class="detail-info-label">
+                            Phương thức thanh toán
+                        </div>
+
+                        <div class="detail-info-value">
+                            @paymentMethod
+                        </div>
+
+                    </div>
+
+                    <div class="detail-info-item">
+
+                        <div class="detail-info-label">
+                            Thời gian thanh toán
+                        </div>
+
+                        <div class="detail-info-value">
+
+                            @if (Model.PaidAt.HasValue)
+                            {
+                                <span>
+                                    @(Model.PaidAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm"))
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="detail-muted">
+                                    Chưa thanh toán
+                                </span>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- PRODUCT LIST -->
+            <section class="detail-card detail-products-card">
+
+                <div class="detail-card-heading">
+
+                    <div class="detail-heading-icon">☕</div>
+
+                    <div>
+                        <h2>Sản phẩm trong đơn hàng</h2>
+                        <p>
+                            @Model.Items.Count sản phẩm ·
+                            @totalQuantity sản phẩm được đặt
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="detail-table-wrap">
+
+                    <table class="detail-table">
+
+                        <thead>
+                            <tr>
+                                <th>SẢN PHẨM</th>
+                                <th>ĐƠN GIÁ</th>
+                                <th>SỐ LƯỢNG</th>
+                                <th class="detail-align-right">
+                                    THÀNH TIỀN
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @if (Model.Items.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="detail-empty">
+                                            Chưa có sản phẩm trong đơn hàng.
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+
+                                        <td>
+                                            <div class="detail-product-name">
+                                                <span class="detail-product-icon">
+                                                    ☕
+                                                </span>
+
+                                                <span>
+                                                    @item.ProductName
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            <span class="detail-unit-price">
+                                                @item.UnitPrice.ToString("N0") đ
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span class="detail-quantity">
+                                                × @item.Quantity
+                                            </span>
+                                        </td>
+
+                                        <td class="detail-align-right">
+                                            <strong class="detail-subtotal">
+                                                @item.Subtotal.ToString("N0") đ
+                                            </strong>
+                                        </td>
+
+                                    </tr>
+                                }
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <!-- PAYMENT SIDEBAR -->
+        <aside class="detail-side-column">
+
+            <section class="detail-payment-card">
+
+                <div class="detail-payment-heading">
+                    <div class="detail-heading-icon">₫</div>
+
+                    <div>
+                        <h2>Tổng kết đơn hàng</h2>
+                        <p>Chi tiết thanh toán</p>
+                    </div>
+                </div>
+
+                <div class="detail-payment-stats">
+
+                    <div class="detail-payment-row">
+                        <span>Số loại sản phẩm</span>
+                        <strong>@Model.Items.Count</strong>
+                    </div>
+
+                    <div class="detail-payment-row">
+                        <span>Tổng số lượng</span>
+                        <strong>@totalQuantity</strong>
+                    </div>
+
+                </div>
+
+                <div class="detail-payment-divider"></div>
+
+                <div class="detail-total-label">
+                    TỔNG THANH TOÁN
+                </div>
+
+                <div class="detail-total-amount">
+                    @Model.Total.ToString("N0") <span>đ</span>
+                </div>
+
+                @if (isPaid)
+                {
+                    <div class="detail-payment-completed">
+                        <span>✓</span>
+                        <div>
+                            <strong>Thanh toán thành công</strong>
+                            <p>Đơn hàng đã được thanh toán.</p>
+                        </div>
+                    </div>
+                }
+                else if (isPending)
+                {
+                    <div class="detail-payment-pending">
+                        <span>◷</span>
+                        <div>
+                            <strong>Đang chờ thanh toán</strong>
+                            <p>Đơn hàng chưa được ghi nhận thanh toán.</p>
+                        </div>
+                    </div>
+                }
+
+            </section>
+
+            <!-- PAYMENT ACTION -->
+            @if (isPending &&
+                        (User.IsInRole("Admin") ||
+                        User.IsInRole("FranchiseOwner") ||
+                        User.IsInRole("StoreManager") ||
+                        User.IsInRole("SalesStaff")))
+            {
+                <section class="detail-action-card">
+
+                    <div class="detail-action-title">
+                        Xác nhận thanh toán
+                    </div>
+
+                    <p>
+                        Kiểm tra số tiền khách hàng đã thanh toán
+                        trước khi xác nhận giao dịch.
+                    </p>
+
+                    <form asp-action="PayCash"
+                          method="post"
+                          onsubmit="return confirm('Xác nhận khách hàng đã thanh toán đủ tiền mặt?');">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="id"
+                               value="@Model.OrderId" />
+
+                        <button type="submit"
+                                class="detail-pay-btn">
+                            <span>✓</span>
+                            Xác nhận thanh toán tiền mặt
+                        </button>
+
+                    </form>
+
+                </section>
+            }
+
+            <div class="detail-support-note">
+                <span>☕</span>
+                <div>
+                    <strong>Trung Nguyen Cafe</strong>
+                    <p>Hệ thống quản lý bán hàng nội bộ</p>
+                </div>
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>

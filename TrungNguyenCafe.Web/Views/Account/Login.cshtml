@@ -1,0 +1,309 @@
+﻿@model TrungNguyenCafe.Web.Models.Auth.LoginViewModel
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Đăng nhập hệ thống";
+    var returnUrl = ViewData["ReturnUrl"] as string;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>@ViewData["Title"] - Trung Nguyen Cafe</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f6f2ed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            display: flex;
+            width: 950px;
+            max-width: 95%;
+            min-height: 570px;
+            background: white;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 15px 50px rgba(50, 30, 15, .12);
+        }
+
+        .login-brand {
+            flex: 1;
+            background: linear-gradient(145deg, #24170f, #563a27);
+            color: white;
+            padding: 55px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .brand-logo {
+            font-size: 27px;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        .brand-subtitle {
+            color: #d5a66d;
+            letter-spacing: 3px;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        .brand-description {
+            margin-top: 55px;
+            line-height: 1.8;
+            color: #e5d6c7;
+        }
+
+        .login-form {
+            flex: 1;
+            padding: 55px 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+            .login-form h2 {
+                color: #382619;
+                font-size: 27px;
+                margin-bottom: 8px;
+            }
+
+            .login-form p {
+                color: #958577;
+                margin-bottom: 25px;
+                font-size: 14px;
+            }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+            .form-group label {
+                display: block;
+                color: #594330;
+                font-size: 14px;
+                margin-bottom: 9px;
+                font-weight: 600;
+            }
+
+            .form-group input {
+                width: 100%;
+                padding: 14px;
+                border: 1px solid #e4ddd5;
+                border-radius: 8px;
+                outline: none;
+                font-size: 14px;
+            }
+
+                .form-group input:focus {
+                    border-color: #bd8a50;
+                    box-shadow: 0 0 0 3px rgba(189,138,80,.12);
+                }
+
+        .tenant-hint {
+            display: block;
+            color: #a39485;
+            font-size: 11px;
+            margin-top: 7px;
+        }
+
+        .remember {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 25px;
+            font-size: 13px;
+            color: #776657;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: #9b6838;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+            .login-button:hover {
+                background: #754b28;
+            }
+
+        .validation-summary {
+            color: #c0392b;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .field-error {
+            color: #c0392b;
+            font-size: 12px;
+        }
+
+        .login-footer {
+            margin-top: 35px;
+            text-align: center;
+            font-size: 12px;
+            color: #a99b8e;
+        }
+
+        @@media (max-width: 700px) {
+            .login-container {
+                flex-direction: column;
+            }
+
+            .login-brand {
+                padding: 30px;
+            }
+
+            .brand-description {
+                margin-top: 20px;
+            }
+
+            .login-form {
+                padding: 35px 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+
+        <div class="login-brand">
+
+            <div class="brand-logo">TRUNG NGUYEN</div>
+
+            <div class="brand-subtitle">
+                CAFE MANAGEMENT
+            </div>
+
+            <div class="brand-description">
+
+                <h1>Chào mừng trở lại!</h1>
+
+                <p>
+                    Hệ thống quản lý tập trung dành cho
+                    chuỗi cửa hàng cà phê Trung Nguyên.
+                </p>
+
+                <p>
+                    Quản lý chi nhánh, nhân viên, sản phẩm,
+                    đơn hàng một cách hiệu quả.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="login-form">
+
+            <h2>Đăng nhập hệ thống</h2>
+
+            <p>
+                Vui lòng nhập thông tin tài khoản của bạn.
+            </p>
+
+            <form asp-controller="Account"
+                  asp-action="Login"
+                  asp-route-returnUrl="@returnUrl"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                @Html.ValidationSummary(
+                false,
+                                "",
+                                new { @class = "validation-summary" })
+
+                <!-- TÊN ĐĂNG NHẬP -->
+                <div class="form-group">
+
+                    <label asp-for="UserName"></label>
+
+                    <input asp-for="UserName"
+                           placeholder="Nhập tên đăng nhập"
+                           autocomplete="username" />
+
+                    <span asp-validation-for="UserName"
+                          class="field-error"></span>
+
+                </div>
+
+                <!-- MÃ CHI NHÁNH -->
+                <div class="form-group">
+
+                    <label asp-for="TenantCode"></label>
+
+                    <input asp-for="TenantCode"
+                           placeholder="Ví dụ: CN001"
+                           autocomplete="off" />
+
+                    <small class="tenant-hint">
+                        Tài khoản Admin hệ thống không cần nhập mã chi nhánh.
+                    </small>
+
+                    <span asp-validation-for="TenantCode"
+                          class="field-error"></span>
+
+                </div>
+
+                <!-- MẬT KHẨU -->
+                <div class="form-group">
+
+                    <label asp-for="Password"></label>
+
+                    <input asp-for="Password"
+                           placeholder="Nhập mật khẩu"
+                           autocomplete="current-password" />
+
+                    <span asp-validation-for="Password"
+                          class="field-error"></span>
+
+                </div>
+
+                <!-- GHI NHỚ ĐĂNG NHẬP -->
+                <div class="remember">
+
+                    <input asp-for="RememberMe" />
+
+                    <label asp-for="RememberMe"></label>
+
+                </div>
+
+                <button type="submit" class="login-button">
+                    ĐĂNG NHẬP HỆ THỐNG
+                </button>
+
+            </form>
+
+            <div class="login-footer">
+                © 2026 Trung Nguyen Cafe Management
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

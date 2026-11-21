@@ -1,0 +1,319 @@
+﻿@model TrungNguyenCafe.Web.Models.Dashboard.DashboardViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Tổng quan";
+
+    var maxRevenue = Model.DailyActivity.Any()
+        ? Model.DailyActivity.Max(x => x.Revenue)
+        : 0m;
+
+    var hasActivity = Model.DailyActivity.Any(
+        x => x.OrderCount > 0 || x.Revenue > 0);
+}
+
+<div class="dashboard">
+
+    <!-- HEADER -->
+    <div class="page-heading">
+
+        <div>
+            <div class="heading-label">
+                DASHBOARD OVERVIEW
+            </div>
+
+            <h1>Tổng quan hệ thống</h1>
+
+            <p>
+                Chào mừng bạn đến với hệ thống quản lý Trung Nguyên Cafe.
+            </p>
+        </div>
+
+        <div class="date-chip">
+            📅 @Model.Today.ToString("dd/MM/yyyy")
+        </div>
+
+    </div>
+
+    <!-- ERROR -->
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="dashboard-error">
+            ⚠ @Model.ErrorMessage
+        </div>
+    }
+
+    <!-- STATISTICS -->
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span>Tổng chi nhánh</span>
+                <div class="stat-icon">🏬</div>
+            </div>
+
+            <div class="stat-number">
+                @(Model.IsLoaded? Model.TotalBranches.ToString("N0") : "—")
+            </div>
+
+            <div class="stat-description">
+                Số chi nhánh trong phạm vi quản lý
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span>Chi nhánh hoạt động</span>
+                <div class="stat-icon green">✓</div>
+            </div>
+
+            <div class="stat-number">
+                @(Model.IsLoaded? Model.ActiveBranches.ToString("N0") : "—")
+            </div>
+
+            <div class="stat-description">
+                Chi nhánh đang hoạt động
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span>Nhân viên</span>
+                <div class="stat-icon blue">♙</div>
+            </div>
+
+            <div class="stat-number">
+                @(Model.IsLoaded? Model.ActiveEmployees.ToString("N0") : "—")
+            </div>
+
+            <div class="stat-description">
+                Tài khoản nhân sự đang hoạt động
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span>Đơn hàng hôm nay</span>
+                <div class="stat-icon orange">▤</div>
+            </div>
+
+            <div class="stat-number">
+                @(Model.IsLoaded? Model.OrdersToday.ToString("N0") : "—")
+            </div>
+
+            <div class="stat-description">
+                Tổng đơn hàng được tạo trong ngày
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="dashboard-grid">
+
+        <!-- ACTIVITY CHART -->
+        <div class="dashboard-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <h2>Tình hình hoạt động</h2>
+
+                    <p>
+                        Doanh thu và số đơn trong 7 ngày gần nhất
+                    </p>
+                </div>
+
+                <span class="panel-badge">
+                    7 ngày
+                </span>
+
+            </div>
+
+            @if (Model.IsLoaded && hasActivity)
+            {
+                <div class="dashboard-revenue-summary">
+                    <div>
+                        <span>DOANH THU HÔM NAY</span>
+
+                        <strong>
+                            @Model.RevenueToday.ToString("N0") đ
+                        </strong>
+                    </div>
+
+                    <div class="dashboard-paid-count">
+                        @Model.DailyActivity.Last().PaidOrderCount
+                        đơn đã thanh toán hôm nay
+                    </div>
+                </div>
+
+                <div class="dashboard-chart">
+
+                    @foreach (var item in Model.DailyActivity)
+                    {
+                        var height = maxRevenue > 0
+                        ? (double)(item.Revenue / maxRevenue * 100m)
+                        : 0;
+
+                        <div class="dashboard-chart-column">
+
+                            <div class="dashboard-chart-value">
+                                @(item.Revenue > 0
+                                                        ? item.Revenue.ToString("N0")
+                                                        : "—")
+                    </div>
+
+                            <div class="dashboard-chart-bar-area">
+
+                                <div class="dashboard-chart-bar"
+                                     style="height: @(height.ToString("0.##", CultureInfo.InvariantCulture))%">
+                                </div>
+
+                            </div>
+
+                            <div class="dashboard-chart-date">
+                                @item.Date.ToString("dd/MM")
+                            </div>
+
+                            <div class="dashboard-chart-orders">
+                                @item.OrderCount đơn
+                            </div>
+
+                        </div>
+                                }
+
+                </div>
+            }
+            else if (Model.IsLoaded)
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">📊</div>
+
+                    <h3>Chưa có giao dịch trong 7 ngày gần nhất</h3>
+
+                    <p>
+                        Biểu đồ sẽ cập nhật khi hệ thống phát sinh đơn hàng.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">📊</div>
+
+                    <h3>Chưa tải được dữ liệu</h3>
+
+                    <p>
+                        Vui lòng kiểm tra kết nối Backend.
+                    </p>
+                </div>
+            }
+
+        </div>
+
+        <!-- QUICK ACCESS -->
+        <div class="dashboard-panel">
+
+            <div class="panel-header">
+                <div>
+                    <h2>Truy cập nhanh</h2>
+                    <p>Các chức năng quản lý</p>
+                </div>
+            </div>
+
+            <div class="quick-list">
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Tenants"
+                       asp-action="Index"
+                       class="quick-item">
+
+                        <div class="quick-icon">🏢</div>
+
+                        <div>
+                            <h4>Quản lý chi nhánh</h4>
+                            <p>Thông tin và trạng thái chi nhánh</p>
+                        </div>
+
+                    </a>
+                }
+
+                @if (User.IsInRole("Admin") ||
+                                User.IsInRole("FranchiseOwner"))
+                {
+                    <a asp-controller="Users"
+                       asp-action="Index"
+                       class="quick-item">
+
+                        <div class="quick-icon">👥</div>
+
+                        <div>
+                            <h4>Quản lý nhân viên</h4>
+                            <p>Tài khoản và phân quyền</p>
+                        </div>
+
+                    </a>
+                }
+
+                @if (User.IsInRole("Admin") ||
+                                User.IsInRole("FranchiseOwner"))
+                {
+                    <a asp-controller="Products"
+                       asp-action="Index"
+                       class="quick-item">
+
+                        <div class="quick-icon">☕</div>
+
+                        <div>
+                            <h4>Quản lý sản phẩm</h4>
+                            <p>Danh sách, giá bán và trạng thái sản phẩm</p>
+                        </div>
+
+                    </a>
+                }
+
+                @if (User.IsInRole("Admin") ||
+                                User.IsInRole("HQManager") ||
+                                User.IsInRole("FranchiseOwner") ||
+                                User.IsInRole("StoreManager"))
+                {
+                    <a asp-controller="Reports"
+                       asp-action="Index"
+                       class="quick-item">
+
+                        <div class="quick-icon">📈</div>
+
+                        <div>
+                            <h4>Báo cáo doanh thu</h4>
+                            <p>Theo dõi kết quả kinh doanh</p>
+                        </div>
+
+                    </a>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- BANNER -->
+    <div class="dashboard-banner">
+
+        <div>
+            <span>TRUNG NGUYEN CAFE MANAGEMENT</span>
+
+            <h2>Quản lý tập trung – Vận hành hiệu quả</h2>
+
+            <p>
+                Hệ thống quản lý hoạt động kinh doanh
+                và vận hành chuỗi cửa hàng cà phê.
+            </p>
+        </div>
+
+        <div class="banner-icon">☕</div>
+
+    </div>
+
+</div>

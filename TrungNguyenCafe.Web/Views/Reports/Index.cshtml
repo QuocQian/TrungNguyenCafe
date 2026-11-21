@@ -1,0 +1,309 @@
+﻿@model TrungNguyenCafe.Web.Models.Reports.SalesReportViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Báo cáo doanh thu";
+
+    var maxRevenue = Model.DailyRevenue.Any()
+        ? Model.DailyRevenue.Max(x => x.Revenue)
+        : 0m;
+}
+
+<div class="report-page">
+
+    <!-- HEADER -->
+    <div class="report-heading">
+        <div>
+            <div class="report-eyebrow">
+                TRUNG NGUYEN CAFE / BUSINESS ANALYTICS
+            </div>
+
+            <h1>Báo cáo kinh doanh</h1>
+
+            <p>Theo dõi doanh thu và hiệu quả hoạt động kinh doanh</p>
+        </div>
+
+        <div class="report-date-label">
+            📊 Báo cáo tổng hợp
+        </div>
+    </div>
+
+    <!-- ALERT -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="report-alert">
+            @TempData["Error"]
+        </div>
+    }
+
+    <!-- FILTER -->
+    <div class="report-filter-card">
+
+        <form asp-controller="Reports"
+              asp-action="Index"
+              method="get"
+              class="report-filter-form">
+
+            <div class="report-filter-group">
+                <label>Từ ngày</label>
+
+                <input type="date"
+                       name="fromDate"
+                       value="@Model.FromDate.ToString("yyyy-MM-dd")"
+                       required />
+            </div>
+
+            <div class="report-filter-group">
+                <label>Đến ngày</label>
+
+                <input type="date"
+                       name="toDate"
+                       value="@Model.ToDate.ToString("yyyy-MM-dd")"
+                       required />
+            </div>
+
+            @if (Model.CanFilterTenant)
+            {
+                <div class="report-filter-group">
+                    <label>Chi nhánh</label>
+
+                    <select name="tenantId">
+                        <option value="">Toàn hệ thống</option>
+
+                        @foreach (var tenant in Model.Tenants)
+                        {
+                            <option value="@tenant.TenantId"
+                                    selected="@(Model.TenantId == tenant.TenantId)">
+                                @tenant.TenantName
+                            </option>
+                        }
+                    </select>
+                </div>
+            }
+
+            <button type="submit" class="report-filter-btn">
+                <span>⌕</span> Xem báo cáo
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- KPI -->
+    <div class="report-stats">
+
+        <div class="report-stat-card">
+            <div class="report-stat-header">
+                <span>Doanh thu</span>
+                <div class="report-stat-icon revenue-icon">₫</div>
+            </div>
+
+            <div class="report-stat-number">
+                @Model.TotalRevenue.ToString("N0") đ
+            </div>
+
+            <div class="report-stat-note">
+                Chỉ tính đơn đã thanh toán
+            </div>
+        </div>
+
+        <div class="report-stat-card">
+            <div class="report-stat-header">
+                <span>Đơn đã thanh toán</span>
+                <div class="report-stat-icon order-icon">▤</div>
+            </div>
+
+            <div class="report-stat-number">
+                @Model.PaidOrderCount
+            </div>
+
+            <div class="report-stat-note">
+                Tổng giao dịch thành công
+            </div>
+        </div>
+
+        <div class="report-stat-card">
+            <div class="report-stat-header">
+                <span>Giá trị trung bình</span>
+                <div class="report-stat-icon average-icon">↗</div>
+            </div>
+
+            <div class="report-stat-number">
+                @Model.AverageOrderValue.ToString("N0") đ
+            </div>
+
+            <div class="report-stat-note">
+                Doanh thu / số đơn đã thanh toán
+            </div>
+        </div>
+
+        <div class="report-stat-card">
+            <div class="report-stat-header">
+                <span>Sản phẩm đã bán</span>
+                <div class="report-stat-icon product-icon">☕</div>
+            </div>
+
+            <div class="report-stat-number">
+                @Model.TotalItemsSold
+            </div>
+
+            <div class="report-stat-note">
+                Tổng số lượng sản phẩm
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CHART -->
+    <div class="report-panel">
+
+        <div class="report-panel-heading">
+            <div>
+                <h2>Doanh thu theo ngày</h2>
+                <p>Biến động doanh thu trong khoảng thời gian đã chọn</p>
+            </div>
+
+            <span class="report-panel-badge">
+                VNĐ
+            </span>
+        </div>
+
+        @if (Model.DailyRevenue.Any())
+        {
+            <div class="report-chart">
+
+                @foreach (var item in Model.DailyRevenue)
+                {
+                    var height = maxRevenue > 0
+                    ? (double)(item.Revenue / maxRevenue * 100m)
+                    : 0;
+
+                    <div class="report-chart-column">
+
+                        <div class="report-chart-value">
+                            @item.Revenue.ToString("N0")
+                        </div>
+
+                        <div class="report-chart-bar-area">
+
+                            <div class="report-chart-bar"
+                                 style="height: @(height.ToString("0.##", CultureInfo.InvariantCulture))%">
+                            </div>
+
+                        </div>
+
+                        <div class="report-chart-date">
+                            @item.Date.ToString("dd/MM")
+                        </div>
+
+                        <div class="report-chart-orders">
+                            @item.OrderCount đơn
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+        }
+        else
+        {
+            <div class="report-empty">
+                <div>📊</div>
+                <h3>Chưa có dữ liệu doanh thu</h3>
+                <p>Hãy chọn khoảng thời gian khác hoặc kiểm tra các đơn hàng đã thanh toán.</p>
+            </div>
+        }
+
+    </div>
+
+    <!-- TOP PRODUCTS -->
+    <div class="report-panel report-products-panel">
+
+        <div class="report-panel-heading">
+            <div>
+                <h2>Sản phẩm bán chạy</h2>
+                <p>Top 5 sản phẩm có số lượng bán cao nhất</p>
+            </div>
+
+            <span class="report-panel-badge">
+                TOP 5
+            </span>
+        </div>
+
+        <div class="report-table-wrap">
+
+            <table class="report-table">
+
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>TÊN SẢN PHẨM</th>
+                        <th>SỐ LƯỢNG BÁN</th>
+                        <th>DOANH THU</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @if (Model.TopProducts.Any())
+                    {
+                        var rank = 0;
+
+                        @foreach (var product in Model.TopProducts)
+                        {
+                            rank++;
+
+                            <tr>
+                                <td>
+                                    <span class="report-rank">
+                                        @rank
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <strong class="report-product-name">
+                                        @product.ProductName
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    <span class="report-quantity">
+                                        @product.QuantitySold
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <strong class="report-product-revenue">
+                                        @product.Revenue.ToString("N0") đ
+                                    </strong>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="report-empty-cell">
+                                Chưa có dữ liệu sản phẩm bán chạy.
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="report-footer">
+        <span>TRUNG NGUYEN CAFE MANAGEMENT SYSTEM</span>
+        <span>
+            Dữ liệu từ @Model.FromDate.ToString("dd/MM/yyyy")
+            đến @Model.ToDate.ToString("dd/MM/yyyy")
+        </span>
+    </div>
+
+</div>

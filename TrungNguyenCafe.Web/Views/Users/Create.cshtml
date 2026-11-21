@@ -1,0 +1,386 @@
+﻿@model TrungNguyenCafe.Web.Models.Users.CreateUserViewModel
+
+@{
+    ViewData["Title"] = "Thêm nhân viên";
+}
+
+<style>
+    .user-create-page {
+        padding: 10px 0;
+    }
+
+    .user-create-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+        .user-create-header h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #38251a;
+            margin: 8px 0;
+        }
+
+        .user-create-header p {
+            color: #a28b79;
+            margin: 0;
+        }
+
+    .user-create-card {
+        background: #fff;
+        border: 1px solid #eee3d9;
+        border-radius: 18px;
+        padding: 32px 40px;
+        box-shadow: 0 5px 20px rgba(60, 35, 20, .04);
+    }
+
+        .user-create-card h4 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #38251a;
+            margin-bottom: 8px;
+        }
+
+        .user-create-card .subtitle {
+            color: #a28b79;
+            margin-bottom: 30px;
+        }
+
+    .form-label-custom {
+        font-weight: 600;
+        color: #38251a;
+        margin-bottom: 10px;
+    }
+
+    .form-control-custom {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid #e8dcd0;
+        border-radius: 11px;
+        font-size: 15px;
+        color: #38251a;
+        background: #fff;
+        outline: none;
+        transition: .2s;
+    }
+
+        .form-control-custom:focus {
+            border-color: #a5754b;
+            box-shadow: 0 0 0 3px rgba(165, 117, 75, .12);
+        }
+
+    .form-group-custom {
+        margin-bottom: 25px;
+    }
+
+    .required-mark {
+        color: #dc5147;
+    }
+
+    .field-error {
+        color: #dc5147;
+        font-size: 13px;
+        margin-top: 6px;
+        display: block;
+    }
+
+    .role-description {
+        padding: 14px 16px;
+        border-radius: 10px;
+        background: #faf6f1;
+        color: #8c684b;
+        font-size: 13px;
+        margin-top: 12px;
+        line-height: 1.7;
+    }
+
+    .tenant-notice {
+        background: #f5f8fc;
+        border: 1px solid #e1e9f3;
+        color: #54708c;
+        padding: 13px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        margin-top: 12px;
+    }
+
+    .form-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        border-top: 1px solid #eee8e2;
+        padding-top: 25px;
+        margin-top: 10px;
+    }
+
+    .btn-cancel-custom {
+        background: #f5eee8;
+        color: #805a3a;
+        padding: 12px 24px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+    }
+
+    .btn-save-custom {
+        background: #95643c;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 10px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-save-custom:hover {
+            background: #754a2b;
+        }
+
+    .btn-cancel-custom:hover {
+        background: #eee2d7;
+        color: #805a3a;
+    }
+
+    @@media(max-width: 768px) {
+        .user-create-card {
+            padding: 22px 18px;
+        }
+
+        .user-create-header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+</style>
+
+<div class="user-create-page">
+
+    <!-- TIÊU ĐỀ -->
+    <div class="user-create-header">
+        <div>
+            <div style="color:#b17b4b;font-size:13px;letter-spacing:2px;">
+                MANAGEMENT / USERS
+            </div>
+
+            <h2>Thêm tài khoản mới</h2>
+
+            <p>Tạo tài khoản và phân quyền người dùng trong hệ thống Trung Nguyên Cafe.</p>
+        </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="user-create-card">
+
+        <h4>Thông tin tài khoản</h4>
+
+        <p class="subtitle">
+            Vui lòng cung cấp đầy đủ thông tin người dùng mới.
+        </p>
+
+        <form asp-controller="Users"
+              asp-action="Create"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+            <!-- TÊN ĐĂNG NHẬP -->
+            <div class="row">
+
+                <div class="col-md-6 form-group-custom">
+
+                    <label asp-for="UserName" class="form-label-custom">
+                        Tên đăng nhập <span class="required-mark">*</span>
+                    </label>
+
+                    <input asp-for="UserName"
+                           class="form-control-custom"
+                           placeholder="Ví dụ: nguyenvana"
+                           autocomplete="off" />
+
+                    <span asp-validation-for="UserName"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+                <!-- MẬT KHẨU -->
+                <div class="col-md-6 form-group-custom">
+
+                    <label asp-for="Password" class="form-label-custom">
+                        Mật khẩu <span class="required-mark">*</span>
+                    </label>
+
+                    <input asp-for="Password"
+                           class="form-control-custom"
+                           type="password"
+                           placeholder="Nhập mật khẩu (tối thiểu 8 ký tự)"
+                           autocomplete="new-password" />
+
+                    <span asp-validation-for="Password"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- PHÂN QUYỀN -->
+            <div class="form-group-custom">
+
+                <label asp-for="RoleName" class="form-label-custom">
+                    Vai trò tài khoản <span class="required-mark">*</span>
+                </label>
+
+                <select asp-for="RoleName"
+                        id="RoleName"
+                        class="form-control-custom">
+
+                    <option value="">-- Chọn vai trò --</option>
+
+                    <option value="Admin">Admin hệ thống</option>
+
+                    <option value="FranchiseOwner">Chủ cửa hàng</option>
+
+                    <option value="SalesStaff">Nhân viên</option>
+
+                </select>
+
+                <span asp-validation-for="RoleName"
+                      class="field-error">
+                </span>
+
+                <div class="role-description" id="roleDescription">
+                    Vui lòng chọn vai trò để xem quyền sử dụng hệ thống.
+                </div>
+
+            </div>
+
+            <!-- CHI NHÁNH -->
+            <div class="form-group-custom" id="tenantGroup">
+
+                <label asp-for="TenantId" class="form-label-custom">
+                    Chi nhánh được phân công
+                    <span class="required-mark" id="tenantRequired">*</span>
+                </label>
+
+                <select asp-for="TenantId"
+                        id="TenantId"
+                        class="form-control-custom">
+
+                    <option value="">-- Chọn chi nhánh --</option>
+
+                    @if (ViewBag.Tenants != null)
+                    {
+                        foreach (var tenant in ViewBag.Tenants)
+                        {
+                            <option value="@tenant.TenantId">
+                                @tenant.TenantCode - @tenant.TenantName
+                            </option>
+                        }
+                    }
+
+                </select>
+
+                <span asp-validation-for="TenantId"
+                      class="field-error">
+                </span>
+
+                <div class="tenant-notice">
+                    Tài khoản Chủ cửa hàng và Nhân viên bắt buộc phải
+                    được phân công vào một chi nhánh.
+                </div>
+
+            </div>
+
+            <!-- NÚT -->
+            <div class="form-footer">
+
+                <a asp-action="Index"
+                   class="btn-cancel-custom">
+                    Hủy
+                </a>
+
+                <button type="submit" class="btn-save-custom">
+                    + Lưu tài khoản
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        const roleSelect = document.getElementById("RoleName");
+        const tenantSelect = document.getElementById("TenantId");
+        const tenantGroup = document.getElementById("tenantGroup");
+        const tenantRequired = document.getElementById("tenantRequired");
+        const roleDescription = document.getElementById("roleDescription");
+
+        function updateRoleForm() {
+
+            const role = roleSelect.value;
+
+            if (role === "Admin") {
+
+                tenantGroup.style.display = "none";
+                tenantSelect.value = "";
+                tenantSelect.required = false;
+
+                roleDescription.innerHTML =
+                    "<strong>Admin hệ thống:</strong> Có toàn quyền quản lý chi nhánh, nhân viên, sản phẩm, đơn hàng và báo cáo.";
+
+            }
+            else if (role === "FranchiseOwner") {
+
+                tenantGroup.style.display = "block";
+                tenantSelect.required = true;
+
+                roleDescription.innerHTML =
+                    "<strong>Chủ cửa hàng:</strong> Quản lý nhân viên, sản phẩm, tạo đơn hàng và xem báo cáo thuộc chi nhánh được phân công.";
+
+            }
+            else if (role === "SalesStaff") {
+
+                tenantGroup.style.display = "block";
+                tenantSelect.required = true;
+
+                roleDescription.innerHTML =
+                    "<strong>Nhân viên:</strong> Được tạo đơn hàng và xem báo cáo doanh thu theo quyền được cấp.";
+
+            }
+            else {
+
+                tenantGroup.style.display = "block";
+                tenantSelect.required = false;
+
+                roleDescription.innerHTML =
+                    "Vui lòng chọn vai trò để xem quyền sử dụng hệ thống.";
+
+            }
+
+        }
+
+        roleSelect.addEventListener("change", updateRoleForm);
+
+        document.addEventListener("DOMContentLoaded", updateRoleForm);
+
+        updateRoleForm();
+
+    </script>
+}

@@ -1,0 +1,258 @@
+﻿
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - Trung Nguyen Cafe</title>
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+</head>
+
+<body>
+
+    <div class="app-shell">
+
+        <!-- =====================================
+             SIDEBAR
+        ====================================== -->
+
+        <aside class="sidebar">
+
+            <!-- LOGO -->
+            <a class="brand"
+               asp-controller="Home"
+               asp-action="Index">
+
+                <div class="brand-icon">☕</div>
+
+                <div class="brand-text">
+                    <strong>TRUNG NGUYEN</strong>
+                    <span>CAFE MANAGEMENT</span>
+                </div>
+
+            </a>
+
+            <!-- TIÊU ĐỀ MENU -->
+            <div class="sidebar-section-title">
+                MENU CHÍNH
+            </div>
+
+            @{
+                var currentController =
+                ViewContext.RouteData.Values["controller"]?.ToString();
+            }
+
+            <!-- =====================================
+                 MENU NAVIGATION
+            ====================================== -->
+
+            <nav class="sidebar-nav">
+
+                <!-- TỔNG QUAN -->
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="nav-link @(currentController == "Home" ? "active" : "")">
+
+                    <span class="nav-icon">▦</span>
+                    <span>Tổng quan</span>
+
+                </a>
+
+                <!-- QUẢN LÝ CHI NHÁNH -->
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Tenants"
+                       asp-action="Index"
+                       class="nav-link @(currentController == "Tenants" ? "active" : "")">
+
+                        <span class="nav-icon">⌂</span>
+                        <span>Chi nhánh</span>
+
+                    </a>
+                }
+
+                <!-- QUẢN LÝ NHÂN VIÊN -->
+                @if (User.IsInRole("Admin") ||
+                                User.IsInRole("FranchiseOwner"))
+                {
+                    <a asp-controller="Users"
+                       asp-action="Index"
+                       class="nav-link @(currentController == "Users" ? "active" : "")">
+
+                        <span class="nav-icon">♙</span>
+                        <span>Nhân viên</span>
+
+                    </a>
+                }
+
+                <!-- QUẢN LÝ SẢN PHẨM -->
+                @if (User.IsInRole("Admin") ||
+                                User.IsInRole("FranchiseOwner"))
+                {
+                    <a asp-controller="Products"
+                       asp-action="Index"
+                       class="nav-link @(currentController == "Products" ? "active" : "")">
+
+                        <span class="nav-icon">☕</span>
+                        <span>Sản phẩm</span>
+
+                    </a>
+                }
+
+                <!-- QUẢN LÝ ĐƠN HÀNG -->
+                <a asp-controller="Orders"
+                   asp-action="History"
+                   class="nav-link @(currentController == "Orders" ? "active" : "")">
+
+                    <span class="nav-icon">▤</span>
+                    <span>Đơn hàng</span>
+
+                </a>
+
+                <!-- BÁO CÁO -->
+                @if (User.IsInRole("Admin") ||
+                                User.IsInRole("HQManager") ||
+                                User.IsInRole("FranchiseOwner") ||
+                                User.IsInRole("StoreManager"))
+                {
+                    <a asp-controller="Reports"
+                       asp-action="Index"
+                       class="nav-link @(currentController == "Reports" ? "active" : "")">
+
+                        <span class="nav-icon">▥</span>
+                        <span>Báo cáo</span>
+
+                    </a>
+                }
+
+            </nav>
+
+            <!-- LƯU Ý: ĐÓNG NAV TRƯỚC SIDEBAR-BOTTOM -->
+            <!-- =====================================
+                 THÔNG TIN TÀI KHOẢN
+            ====================================== -->
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-user">
+
+                    <div class="user-avatar">
+                        AD
+                    </div>
+
+                    <div>
+                        <strong>
+                            @(User.Identity?.Name ?? "Administrator")
+                        </strong>
+
+                        <span>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                @:Quản trị viên
+                            }
+                            else if (User.IsInRole("FranchiseOwner"))
+                            {
+                                @:Chủ cửa hàng
+                            }
+                            else if (User.IsInRole("StoreManager"))
+                            {
+                                @:Quản lý chi nhánh
+                            }
+                            else if (User.IsInRole("HQManager"))
+                            {
+                                @:Quản lý trụ sở
+                            }
+                            else
+                            {
+                                @:Nhân viên
+                            }
+                        </span>
+                    </div>
+
+                </div>
+
+                <!-- ĐĂNG XUẤT -->
+                <form asp-controller="Account"
+                      asp-action="Logout"
+                      method="post"
+                      class="logout-form">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="logout-button">
+
+                        <span class="logout-icon">↪</span>
+                        <span>Đăng xuất</span>
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </aside>
+
+        <!-- =====================================
+             MAIN AREA
+        ====================================== -->
+
+        <div class="main-area">
+
+            <!-- TOPBAR -->
+            <header class="topbar">
+
+                <div>
+
+                    <div class="topbar-eyebrow">
+                        TRUNG NGUYEN CAFE / ADMIN
+                    </div>
+
+                    <div class="topbar-title">
+                        Hệ thống quản lý
+                    </div>
+
+                </div>
+
+                <div class="topbar-right">
+
+                    <div class="status-pill">
+                        <span class="status-dot"></span>
+                        Hệ thống nội bộ
+                    </div>
+
+                    <div class="topbar-avatar">
+                        AD
+                    </div>
+
+                </div>
+
+            </header>
+
+            <!-- NỘI DUNG TỪNG TRANG -->
+            <main class="page-content">
+
+                @RenderBody()
+
+            </main>
+
+            <!-- FOOTER -->
+            <footer class="app-footer">
+
+                © @DateTime.Now.Year Trung Nguyen Cafe Management System
+
+            </footer>
+
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT CỦA TỪNG TRANG -->
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

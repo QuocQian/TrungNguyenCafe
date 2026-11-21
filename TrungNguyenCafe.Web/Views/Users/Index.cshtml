@@ -1,0 +1,377 @@
+﻿@model List<TrungNguyenCafe.Web.Models.Users.UserViewModel>
+
+@{
+    ViewData["Title"] = "Quản lý nhân viên";
+}
+
+<style>
+    .users-page {
+        padding: 10px 0;
+    }
+
+    .users-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        gap: 15px;
+    }
+
+        .users-header h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #38251a;
+            margin: 8px 0;
+        }
+
+        .users-header p {
+            color: #a28b79;
+            margin: 0;
+        }
+
+    .users-card {
+        background: white;
+        border: 1px solid #eee3d9;
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 5px 20px rgba(60, 35, 20, .04);
+    }
+
+    .users-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+        .users-card-header h4 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #38251a;
+            margin-bottom: 5px;
+        }
+
+        .users-card-header p {
+            color: #a28b79;
+            margin: 0;
+            font-size: 14px;
+        }
+
+    .users-table-wrap {
+        overflow-x: auto;
+    }
+
+    .users-table {
+        width: 100%;
+        min-width: 850px;
+        border-collapse: collapse;
+    }
+
+        .users-table th {
+            background: #faf7f4;
+            color: #967052;
+            font-weight: 600;
+            padding: 16px 14px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .users-table td {
+            padding: 17px 14px;
+            border-bottom: 1px solid #eee8e2;
+            vertical-align: middle;
+            color: #38251a;
+        }
+
+        .users-table tr:last-child td {
+            border-bottom: none;
+        }
+
+    .user-name {
+        font-weight: 700;
+    }
+
+    .user-code {
+        color: #a66b36;
+        font-weight: 700;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 7px 13px;
+        border-radius: 20px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .status-active {
+        background: #e7f5ec;
+        color: #16834b;
+    }
+
+    .status-locked {
+        background: #fff0ef;
+        color: #d34b45;
+    }
+
+    .btn-user {
+        border: none;
+        border-radius: 9px;
+        padding: 9px 13px;
+        font-size: 13px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .btn-edit-user {
+        background: #f5eee7;
+        color: #87572e;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-lock-user {
+        background: #fff0ef;
+        color: #d34b45;
+    }
+
+    .btn-unlock-user {
+        background: #e7f5ec;
+        color: #16834b;
+    }
+
+    .btn-add-user {
+        background: #95643c;
+        color: white;
+        text-decoration: none;
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+        .btn-add-user:hover {
+            background: #754a2b;
+            color: white;
+        }
+
+    .user-actions {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .users-alert {
+        padding: 13px 18px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .users-empty {
+        text-align: center;
+        padding: 45px 15px;
+        color: #a28b79;
+    }
+
+    @@media (max-width: 768px) {
+        .users-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .users-card {
+            padding: 15px;
+        }
+    }
+</style>
+
+<div class="users-page">
+
+    <!-- TIÊU ĐỀ -->
+    <div class="users-header">
+        <div>
+            <div style="color:#b17b4b;font-size:13px;letter-spacing:2px;">
+                MANAGEMENT / USERS
+            </div>
+
+            <h2>Quản lý nhân viên</h2>
+
+            <p>Quản lý tài khoản, vai trò và trạng thái nhân viên trong hệ thống.</p>
+        </div>
+
+        <a asp-action="Create" class="btn-add-user">
+            + Thêm nhân viên
+        </a>
+    </div>
+
+    <!-- THÔNG BÁO -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="users-alert alert alert-success">
+            ✓ @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="users-alert alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    <!-- DANH SÁCH -->
+    <div class="users-card">
+
+        <div class="users-card-header">
+            <div>
+                <h4>Danh sách tài khoản</h4>
+                <p>Thông tin người dùng trong hệ thống Trung Nguyên Cafe</p>
+            </div>
+        </div>
+
+        <div class="users-table-wrap">
+
+            <table class="users-table">
+
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên đăng nhập</th>
+                        <th>Vai trò</th>
+                        <th>Mã chi nhánh</th>
+                        <th>Chi nhánh</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @if (Model == null || !Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7">
+                                <div class="users-empty">
+                                    <h4>Chưa có tài khoản</h4>
+                                    <p>Hãy tạo tài khoản nhân viên đầu tiên.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var index = 0;
+
+                        @foreach (var user in Model)
+                        {
+                            index++;
+
+                            var isAdmin = string.Equals(
+                            user.RoleName,
+                            "Admin",
+                            StringComparison.OrdinalIgnoreCase);
+
+                            var isActive = string.Equals(
+                            user.AccountStatus,
+                            "Active",
+                            StringComparison.OrdinalIgnoreCase);
+
+                            var roleLabel = user.RoleName switch
+                            {
+                                "Admin" => "Admin hệ thống",
+                                "FranchiseOwner" => "Chủ cửa hàng",
+                                "StoreManager" => "Chủ cửa hàng",
+                                "SalesStaff" => "Nhân viên",
+                                _ => user.RoleName
+                            };
+
+                            <tr>
+                                <td>@index</td>
+
+                                <td>
+                                    <span class="user-name">
+                                        @user.UserName
+                                    </span>
+                                </td>
+
+                                <td>@roleLabel</td>
+
+                                <td>
+                                    <span class="user-code">
+                                        @(user.TenantCode ?? "—")
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @(user.TenantName ?? "Toàn hệ thống")
+                                </td>
+
+                                <td>
+                                    <span class="status-badge @(isActive ? "status-active" : "status-locked")">
+                                        @(isActive ? "Đang hoạt động" : "Đã khóa")
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="user-actions">
+
+                                        @if (!isAdmin)
+                                        {
+                                            <a asp-action="Edit"
+                                               asp-route-id="@user.UserId"
+                                               class="btn-user btn-edit-user">
+                                                Sửa
+                                            </a>
+
+                                            @if (isActive)
+                                            {
+                                                <form asp-action="Lock"
+                                                      asp-route-id="@user.UserId"
+                                                      method="post"
+                                                      onsubmit="return confirm('Bạn có chắc chắn muốn khóa tài khoản này?');">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button type="submit"
+                                                            class="btn-user btn-lock-user">
+                                                        Khóa
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form asp-action="Unlock"
+                                                      asp-route-id="@user.UserId"
+                                                      method="post"
+                                                      onsubmit="return confirm('Bạn có muốn mở khóa tài khoản này?');">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button type="submit"
+                                                            class="btn-user btn-unlock-user">
+                                                        Mở khóa
+                                                    </button>
+                                                </form>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span style="color:#a28b79;font-size:13px;">
+                                                Tài khoản hệ thống
+                                            </span>
+                                        }
+
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</div>
